@@ -46,7 +46,6 @@ public class Clawler {
 
     private void updateProfiles(int seasonId) {
         ArrayList<Integer> ladderIds = this.getAllLadderIds(seasonId);
-
         ladderIds.forEach(ladderId -> {
             // wait for api request limit
             try {
@@ -56,10 +55,14 @@ public class Clawler {
             }
 
             // save to db
-            List<ProfileLog> profileLogs = this.getProfileLogs(ladderId);
-            profileLogs.forEach(profileLog -> {
-                profileLog.save(this.con);
-            });
+            try {
+                List<ProfileLog> profileLogs = this.getProfileLogs(ladderId);
+                profileLogs.forEach(profileLog -> {
+                    profileLog.save(this.con);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             try {
                 this.con.commit();
@@ -82,77 +85,86 @@ public class Clawler {
 
         JsonArray teamJsonArray = ladderJson.getAsJsonArray("team");
         teamJsonArray.forEach(team -> {
-            JsonObject teamJson = team.getAsJsonObject();
-            int rating = teamJson.get("rating").getAsInt();
-            int points = teamJson.get("points").getAsInt();
-            int wins = teamJson.get("wins").getAsInt();
-            int losses = teamJson.get("losses").getAsInt();
-            int ties = teamJson.get("ties").getAsInt();
-            int longestWinStreak = teamJson.get("longest_win_streak").getAsInt();
-            int currentWinStreak = teamJson.get("current_win_streak").getAsInt();
-            int currentRank = teamJson.get("current_rank").getAsInt();
-            int highestRank = teamJson.get("highest_rank").getAsInt();
-            int previousRank = teamJson.get("previous_rank").getAsInt();
-            long joinedAt = teamJson.get("join_time_stamp").getAsLong();
-            long lastPlayedAt = teamJson.get("last_played_time_stamp").getAsLong();
+            try {
+                JsonObject teamJson = team.getAsJsonObject();
+                int rating = teamJson.get("rating").getAsInt();
+                int points = teamJson.get("points").getAsInt();
+                int wins = teamJson.get("wins").getAsInt();
+                int losses = teamJson.get("losses").getAsInt();
+                int ties = teamJson.get("ties").getAsInt();
+                int longestWinStreak = teamJson.get("longest_win_streak").getAsInt();
+                int currentWinStreak = teamJson.get("current_win_streak").getAsInt();
+                int currentRank = teamJson.get("current_rank").getAsInt();
+                int highestRank = teamJson.get("highest_rank").getAsInt();
+                int previousRank = teamJson.get("previous_rank").getAsInt();
+                long joinedAt = teamJson.get("join_time_stamp").getAsLong();
+                long lastPlayedAt = teamJson.get("last_played_time_stamp").getAsLong();
 
-            // NOTE: only considering 1v1
-            JsonArray memberJsonArray = teamJson.getAsJsonArray("member");
-            JsonObject memberJson = memberJsonArray.get(0).getAsJsonObject();
-            JsonObject raceJson = memberJson.getAsJsonArray("played_race_count").get(0).getAsJsonObject();
-            String race = raceJson.get("race").getAsString();
-            int count = raceJson.get("count").getAsInt();
+                // NOTE: only considering 1v1
+                JsonArray memberJsonArray = teamJson.getAsJsonArray("member");
+                JsonObject memberJson = memberJsonArray.get(0).getAsJsonObject();
+                JsonObject raceJson = memberJson.getAsJsonArray("played_race_count").get(0).getAsJsonObject();
+                String race = raceJson.get("race").getAsString();
+                int count = raceJson.get("count").getAsInt();
 
-            JsonObject legacyCharacterJson = memberJson.getAsJsonObject("legacy_link");
+                JsonObject legacyCharacterJson = memberJson.getAsJsonObject("legacy_link");
 
-            // remove # suffix
-            String name = legacyCharacterJson.get("name").getAsString();
-            name = name.split("#")[0];
+                // remove # suffix
+                String name = legacyCharacterJson.get("name").getAsString();
+                name = name.split("#")[0];
 
-            JsonObject characterJson = memberJson.getAsJsonObject("character_link");
-            int profileId = characterJson.get("id").getAsInt();
-            String battleTag = characterJson.get("battle_tag").getAsString();
+                JsonObject characterJson = memberJson.getAsJsonObject("character_link");
+                int profileId = characterJson.get("id").getAsInt();
+                String battleTag = characterJson.get("battle_tag").getAsString();
 
-            int clanId = 0;
-            String clanTag = null;
-            String clanName = null;
-            String clanIconURL = null;
-            String clanDecalURL = null;
-            if (memberJson.has("clan_link")) {
-                JsonObject clanLinkJson = memberJson.getAsJsonObject("clan_link");
-                clanId = clanLinkJson.get("id").getAsInt();
-                clanTag = clanLinkJson.get("clan_tag").getAsString();
-                clanName = clanLinkJson.get("clan_name").getAsString();
+                int clanId = 0;
+                String clanTag = null;
+                String clanName = null;
+                String clanIconURL = null;
+                String clanDecalURL = null;
+                if (memberJson.has("clan_link")) {
+                    JsonObject clanLinkJson = memberJson.getAsJsonObject("clan_link");
+                    clanId = clanLinkJson.get("id").getAsInt();
+                    clanTag = clanLinkJson.get("clan_tag").getAsString();
+                    clanName = clanLinkJson.get("clan_name").getAsString();
 
-                if (clanLinkJson.has("icon_url")) {
-                    clanIconURL = clanLinkJson.get("icon_url").getAsString();
+                    if (clanLinkJson.has("icon_url")) {
+                        clanIconURL = clanLinkJson.get("icon_url").getAsString();
+                    }
+
+                    if (clanLinkJson.has("decal_url")) {
+                        clanDecalURL = clanLinkJson.get("decal_url").getAsString();
+                    }
                 }
 
-                if (clanLinkJson.has("decal_url")) {
-                    clanDecalURL = clanLinkJson.get("decal_url").getAsString();
-                }
+                ProfileLog profileLog = new ProfileLog(
+                        profileId, name, battleTag, leagueId,
+                        seasonId, queueId, teamType, race,
+                        count, rating, points, wins, losses,
+                        ties,
+                        longestWinStreak,
+                        currentWinStreak,
+                        currentRank,
+                        highestRank,
+                        previousRank,
+                        clanId,
+                        clanTag,
+                        clanName,
+                        clanIconURL,
+                        clanDecalURL,
+                        joinedAt,
+                        lastPlayedAt
+                );
+
+                profileLogs.add(profileLog);
+
+            } catch (Exception e) {
+                System.err.println(String.format(
+                        "Failed to parse JSON. LeagueID: %d, SeasonID: %d, QueueID: %d, TeamType: %d",
+                        leagueId, seasonId, queueId, teamType
+                ));
+                e.printStackTrace();
             }
-
-            ProfileLog profileLog = new ProfileLog(
-                    profileId, name, battleTag, leagueId,
-                    seasonId, queueId, teamType, race,
-                    count, rating, points, wins, losses,
-                    ties,
-                    longestWinStreak,
-                    currentWinStreak,
-                    currentRank,
-                    highestRank,
-                    previousRank,
-                    clanId,
-                    clanTag,
-                    clanName,
-                    clanIconURL,
-                    clanDecalURL,
-                    joinedAt,
-                    lastPlayedAt
-            );
-
-            profileLogs.add(profileLog);
         });
 
         return profileLogs;
