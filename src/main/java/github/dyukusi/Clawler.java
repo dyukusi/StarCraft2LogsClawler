@@ -160,8 +160,8 @@ public class Clawler {
 
             } catch (Exception e) {
                 System.err.println(String.format(
-                        "Failed to parse JSON. LeagueID: %d, SeasonID: %d, QueueID: %d, TeamType: %d",
-                        leagueId, seasonId, queueId, teamType
+                        "Failed to parse JSON. LadderId: %d, LeagueID: %d, SeasonID: %d, QueueID: %d, TeamType: %d",
+                        ladderId, leagueId, seasonId, queueId, teamType
                 ));
                 e.printStackTrace();
             }
