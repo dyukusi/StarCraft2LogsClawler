@@ -37,15 +37,18 @@ public class Clawler {
     public void exec() throws SQLException {
         this.con = this.db.connect();
 
-        int currentSeasonId = this.updateCurrentSeason();
-        this.updateProfiles(currentSeasonId);
+        for (Region region : Region.values()) {
+            int currentSeasonId = this.updateCurrentSeason(region);
+            this.updateProfiles(region, currentSeasonId);
 
-        this.con.commit();
+            this.con.commit();
+        }
+
         this.con.close();
     }
 
-    private void updateProfiles(int seasonId) {
-        ArrayList<Integer> ladderIds = this.getAllLadderIds(seasonId);
+    private void updateProfiles(Region region, int seasonId) {
+        ArrayList<Integer> ladderIds = this.getAllLadderIds(region, seasonId);
         ladderIds.forEach(ladderId -> {
             // wait for api request limit
             try {
@@ -56,7 +59,7 @@ public class Clawler {
 
             // save to db
             try {
-                List<ProfileLog> profileLogs = this.getProfileLogs(ladderId);
+                List<ProfileLog> profileLogs = this.getProfileLogs(region, ladderId);
                 profileLogs.forEach(profileLog -> {
                     profileLog.save(this.con);
                 });
@@ -72,10 +75,9 @@ public class Clawler {
         });
     }
 
-    private ArrayList<ProfileLog> getProfileLogs(Integer ladderId) {
+    private ArrayList<ProfileLog> getProfileLogs(Region region, Integer ladderId) {
         ArrayList<ProfileLog> profileLogs = new ArrayList<>();
-
-        JsonObject ladderJson = BnetAPI.getLadder(ladderId, Constant.BNET_API.LOCALE.US, this.BNET_API_ACCESS_TOKEN);
+        JsonObject ladderJson = BnetAPI.getLadder(region, ladderId, this.BNET_API_ACCESS_TOKEN);
 
         JsonObject leagueJson = ladderJson.getAsJsonObject("league").getAsJsonObject("league_key");
         int leagueId = leagueJson.get("league_id").getAsInt();
@@ -104,7 +106,12 @@ public class Clawler {
                 JsonArray memberJsonArray = teamJson.getAsJsonArray("member");
                 JsonObject memberJson = memberJsonArray.get(0).getAsJsonObject();
                 JsonObject raceJson = memberJson.getAsJsonArray("played_race_count").get(0).getAsJsonObject();
-                String race = raceJson.get("race").getAsString();
+
+                String raceStr = "Null";
+                if (raceJson.has("race") && !raceJson.get("race").isJsonNull()) {
+                    raceStr = raceJson.get("race").getAsString();
+                }
+                Race race = Race.valueOf(raceStr);
                 int count = raceJson.get("count").getAsInt();
 
                 JsonObject legacyCharacterJson = memberJson.getAsJsonObject("legacy_link");
@@ -138,7 +145,7 @@ public class Clawler {
                 }
 
                 ProfileLog profileLog = new ProfileLog(
-                        profileId, name, battleTag, leagueId,
+                        profileId, name, region, battleTag, leagueId,
                         seasonId, queueId, teamType, race,
                         count, rating, points, wins, losses,
                         ties,
@@ -171,11 +178,11 @@ public class Clawler {
     }
 
     // NOTE: only supporting 1v1 atm
-    private ArrayList<Integer> getAllLadderIds(int seasonId) {
+    private ArrayList<Integer> getAllLadderIds(Region region, int seasonId) {
         ArrayList<Integer> ladderIds = new ArrayList<>();
 
         for (int leagueId : Constant.LEAGUE_IDS) {
-            JsonArray tierJsonArray = BnetAPI.getLeague(seasonId, Constant.LOTV_1V1_QUEUE_ID, leagueId, this.BNET_API_ACCESS_TOKEN).get("tier").getAsJsonArray();
+            JsonArray tierJsonArray = BnetAPI.getLeague(region, seasonId, Constant.LOTV_1V1_QUEUE_ID, leagueId, this.BNET_API_ACCESS_TOKEN).get("tier").getAsJsonArray();
 
             tierJsonArray.forEach(tierJson -> {
                 List<Integer> extractedLadderIds = this.extractLadderIdsByTierJson(tierJson.getAsJsonObject());
@@ -199,12 +206,13 @@ public class Clawler {
         return ladderIds;
     }
 
-    private int updateCurrentSeason() {
-        JsonObject currentSeasonJson = BnetAPI.getCurrentSeason(this.BNET_API_ACCESS_TOKEN);
+    private int updateCurrentSeason(Region region) {
+        JsonObject currentSeasonJson = BnetAPI.getCurrentSeason(region, this.BNET_API_ACCESS_TOKEN);
         Season season = new Season(
                 currentSeasonJson.get("id").getAsInt(),
                 currentSeasonJson.get("year").getAsInt(),
                 currentSeasonJson.get("number").getAsInt(),
+                region.getId(),
                 currentSeasonJson.get("start_timestamp").getAsLong(),
                 currentSeasonJson.get("end_timestamp").getAsLong()
         );

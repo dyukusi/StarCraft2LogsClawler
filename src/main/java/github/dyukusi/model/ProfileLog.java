@@ -1,16 +1,20 @@
 package github.dyukusi.model;
 
+import github.dyukusi.Race;
+import github.dyukusi.Region;
+
 import java.sql.*;
 
 public class ProfileLog {
     private int id;
     private String name;
+    private Region region;
     private String battleTag;
     private int leagueId;
     private int seasonId;
     private int queueId;
     private int teamType;
-    private String race;
+    private Race race;
     private int playedCount;
     private int rating;
     private int points;
@@ -30,8 +34,8 @@ public class ProfileLog {
     private long joinedAt;
     private long lastPlayedAt;
 
-    public ProfileLog(int profileId, String name, String battleTag, int leagueId,
-                      int seasonId, int queueId, int teamType, String race,
+    public ProfileLog(int profileId, String name, Region region, String battleTag, int leagueId,
+                      int seasonId, int queueId, int teamType, Race race,
                       int playedCount, int rating, int points, int wins,
                       int losses, int ties, int longestWinStreak, int currentWinStreak,
                       int currentRank, int highestRank, int previousRank, int clanId,
@@ -39,6 +43,7 @@ public class ProfileLog {
                       long joinedAt, long lastPlayedAt) {
         this.id = profileId;
         this.name = name;
+        this.region = region;
         this.battleTag = battleTag;
         this.leagueId = leagueId;
         this.seasonId = seasonId;
@@ -71,39 +76,40 @@ public class ProfileLog {
 
     public void save(Connection con) {
         try {
-            String sql = String.format(
-                    "INSERT INTO profile_log VALUES " +
-                            "(%d, '%s', '%s', %d, %d, %d, %d, \"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", FROM_UNIXTIME(%d), FROM_UNIXTIME(%d), CURRENT_TIMESTAMP);",
-                    this.id,
-                    this.name,
-                    this.battleTag,
-                    this.leagueId,
-                    this.seasonId,
-                    this.queueId,
-                    this.teamType,
-                    this.race,
-                    this.playedCount,
-                    this.rating,
-                    this.points,
-                    this.wins,
-                    this.losses,
-                    this.ties,
-                    this.longestWinStreak,
-                    this.currentWinStreak,
-                    this.currentRank,
-                    this.highestRank,
-                    this.previousRank,
-                    this.clanId,
-                    this.clanTag,
-                    this.clanName,
-                    this.clanIconURL,
-                    this.clanDecalURL,
-                    this.joinedAt,
-                    this.lastPlayedAt
-            );
+            PreparedStatement ps = con.prepareStatement("INSERT INTO profile_log VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), CURRENT_TIMESTAMP)");
+            ps.setInt(1, this.region.getId());
+            ps.setInt(2, this.id);
+            ps.setString(3,this.name);
+            ps.setString(4, this.battleTag);
+            ps.setInt(5, this.leagueId);
+            ps.setInt(6, this.seasonId);
+            ps.setInt(7, this.queueId);
+            ps.setInt(8, this.teamType);
+            ps.setInt(9, this.race.getId());
+            ps.setInt(10, this.playedCount);
+            ps.setInt(11, this.rating);
+            ps.setInt(12, this.points);
+            ps.setInt(13, this.wins);
+            ps.setInt(14, this.losses);
+            ps.setInt(15, this.ties);
+            ps.setInt(16, this.longestWinStreak);
+            ps.setInt(17, this.currentWinStreak);
+            ps.setInt(18, this.currentRank);
+            ps.setInt(19, this.highestRank);
+            ps.setInt(20, this.previousRank);
+            ps.setInt(21, this.clanId);
+            ps.setString(22, this.clanTag);
+            ps.setString(23, this.clanName);
+            ps.setString(24, this.clanIconURL);
+            ps.setString(25, this.clanDecalURL);
+            ps.setLong(26, this.joinedAt);
+            ps.setLong(27, this.lastPlayedAt);
 
-            Statement st = con.createStatement();
-            st.execute(sql);
+            boolean result = ps.execute();
+            if (result) {
+                System.err.println("profile_log insertion failed. " + ps.toString());
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

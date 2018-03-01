@@ -27,28 +27,18 @@ public class BnetAPI {
         return null;
     }
 
-    static JsonObject getLadder(int ladderId, String locale, String accessToken) {
-        String urlStr = String.format(Constant.BNET_API.SC2.BASE_URL_OF_LADDER_API, Integer.toString(ladderId), locale, accessToken);
+    static JsonObject getLadder(Region region, int ladderId, String accessToken) {
+        String urlStr = String.format(Constant.BASE_URL_OF_LADDER_API.get(region), Integer.toString(ladderId), accessToken);
         return getJsonByURL(urlStr);
     }
 
-    static JsonObject getProfile(int userId, String userName, String locale, String apiKey) {
-        String urlStr = String.format(Constant.BNET_API.SC2.BASE_URL_OF_PROFILE_API, Integer.toString(userId), userName, locale, apiKey);
+    static JsonObject getCurrentSeason(Region region, String accessToken) {
+        String urlStr = String.format(Constant.BASE_URL_OF_CURRENT_SEASON_API.get(region), accessToken);
         return getJsonByURL(urlStr);
     }
 
-    static JsonObject getPersonLadder(int userId, String userName, String locale, String apiKey) {
-        String urlStr = String.format(Constant.BNET_API.SC2.BASE_URL_OF_SPECIFIC_PERSON_LADDER_API, Integer.toString(userId), userName, locale, apiKey);
-        return getJsonByURL(urlStr);
-    }
-
-    static JsonObject getCurrentSeason(String accessToken) {
-        String urlStr = String.format(Constant.BNET_API.SC2.BASE_URL_OF_CURRENT_SEASON_API, accessToken);
-        return getJsonByURL(urlStr);
-    }
-
-    static JsonObject getLeague(int seasonId, int queueId, int leagueId, String accessToken) {
-        String urlStr = String.format(Constant.BNET_API.SC2.BASE_URL_OF_LEAGUE_API, seasonId, queueId, leagueId, Constant.BNET_API.LOCALE.US, accessToken);
+    static JsonObject getLeague(Region region, int seasonId, int queueId, int leagueId, String accessToken) {
+        String urlStr = String.format(Constant.BASE_URL_OF_LEAGUE_API.get(region), seasonId, queueId, leagueId, accessToken);
         return getJsonByURL(urlStr);
     }
 }

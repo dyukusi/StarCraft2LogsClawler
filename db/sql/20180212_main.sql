@@ -3,6 +3,7 @@ DROP DATABASE sc2logs;
 CREATE DATABASE sc2logs;
 
 CREATE TABLE sc2logs.profile_log (
+       region_id INT NOT NULL,
        id INT NOT NULL,
        name VARCHAR(32) NOT NULL,
        battle_tag VARCHAR(32) NOT NULL,
@@ -10,7 +11,7 @@ CREATE TABLE sc2logs.profile_log (
        season_id INT NOT NULL,
        queue_id INT NOT NULL,
        team_type INT NOT NULL,
-       race VARCHAR(32) NOT NULL,
+       race_id INT NOT NULL,
        played_count INT NOT NULL,
        rating INT NOT NULL,
        points INT NOT NULL,
@@ -30,10 +31,13 @@ CREATE TABLE sc2logs.profile_log (
        joined_at DATETIME NOT NULL,
        last_played_at DATETIME NOT NULL,
        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-       INDEX (id, name)
+       INDEX id_index(id),
+       INDEX name_index(name),
+       INDEX search(region_id, name)
 ) ENGINE=InnoDB;
 
 CREATE TABLE sc2logs.season (
+       region_id INT NOT NULL,
        id INT NOT NULL,
        year INT NOT NULL,
        number INT NOT NULL,
