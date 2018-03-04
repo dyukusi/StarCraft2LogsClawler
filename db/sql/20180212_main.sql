@@ -9,6 +9,7 @@ CREATE TABLE sc2logs.profile_log (
        battle_tag VARCHAR(32) NOT NULL,
        league_id INT NOT NULL,
        season_id INT NOT NULL,
+       ladder_id INT NOT NULL,
        queue_id INT NOT NULL,
        team_type INT NOT NULL,
        race_id INT NOT NULL,

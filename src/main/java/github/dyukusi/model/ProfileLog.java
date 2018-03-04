@@ -12,6 +12,7 @@ public class ProfileLog {
     private String battleTag;
     private int leagueId;
     private int seasonId;
+    private int ladderId;
     private int queueId;
     private int teamType;
     private Race race;
@@ -35,7 +36,7 @@ public class ProfileLog {
     private long lastPlayedAt;
 
     public ProfileLog(int profileId, String name, Region region, String battleTag, int leagueId,
-                      int seasonId, int queueId, int teamType, Race race,
+                      int seasonId, int ladderId, int queueId, int teamType, Race race,
                       int playedCount, int rating, int points, int wins,
                       int losses, int ties, int longestWinStreak, int currentWinStreak,
                       int currentRank, int highestRank, int previousRank, int clanId,
@@ -47,6 +48,7 @@ public class ProfileLog {
         this.battleTag = battleTag;
         this.leagueId = leagueId;
         this.seasonId = seasonId;
+        this.ladderId = ladderId;
         this.queueId = queueId;
         this.teamType = teamType;
         this.race = race;
@@ -76,34 +78,35 @@ public class ProfileLog {
 
     public void save(Connection con) {
         try {
-            PreparedStatement ps = con.prepareStatement("INSERT INTO profile_log VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), CURRENT_TIMESTAMP)");
+            PreparedStatement ps = con.prepareStatement("INSERT INTO profile_log VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), CURRENT_TIMESTAMP)");
             ps.setInt(1, this.region.getId());
             ps.setInt(2, this.id);
             ps.setString(3,this.name);
             ps.setString(4, this.battleTag);
             ps.setInt(5, this.leagueId);
             ps.setInt(6, this.seasonId);
-            ps.setInt(7, this.queueId);
-            ps.setInt(8, this.teamType);
-            ps.setInt(9, this.race.getId());
-            ps.setInt(10, this.playedCount);
-            ps.setInt(11, this.rating);
-            ps.setInt(12, this.points);
-            ps.setInt(13, this.wins);
-            ps.setInt(14, this.losses);
-            ps.setInt(15, this.ties);
-            ps.setInt(16, this.longestWinStreak);
-            ps.setInt(17, this.currentWinStreak);
-            ps.setInt(18, this.currentRank);
-            ps.setInt(19, this.highestRank);
-            ps.setInt(20, this.previousRank);
-            ps.setInt(21, this.clanId);
-            ps.setString(22, this.clanTag);
-            ps.setString(23, this.clanName);
-            ps.setString(24, this.clanIconURL);
-            ps.setString(25, this.clanDecalURL);
-            ps.setLong(26, this.joinedAt);
-            ps.setLong(27, this.lastPlayedAt);
+            ps.setInt(7, this.ladderId);
+            ps.setInt(8, this.queueId);
+            ps.setInt(9, this.teamType);
+            ps.setInt(10, this.race.getId());
+            ps.setInt(11, this.playedCount);
+            ps.setInt(12, this.rating);
+            ps.setInt(13, this.points);
+            ps.setInt(14, this.wins);
+            ps.setInt(15, this.losses);
+            ps.setInt(16, this.ties);
+            ps.setInt(17, this.longestWinStreak);
+            ps.setInt(18, this.currentWinStreak);
+            ps.setInt(19, this.currentRank);
+            ps.setInt(20, this.highestRank);
+            ps.setInt(21, this.previousRank);
+            ps.setInt(22, this.clanId);
+            ps.setString(23, this.clanTag);
+            ps.setString(24, this.clanName);
+            ps.setString(25, this.clanIconURL);
+            ps.setString(26, this.clanDecalURL);
+            ps.setLong(27, this.joinedAt);
+            ps.setLong(28, this.lastPlayedAt);
 
             boolean result = ps.execute();
             if (result) {

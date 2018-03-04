@@ -136,7 +136,7 @@ public class Clawler {
 
                 ProfileLog profileLog = new ProfileLog(
                         profileId, name, region, battleTag, leagueId,
-                        seasonId, queueId, teamType, race,
+                        seasonId, ladderId, queueId, teamType, race,
                         count, rating, points, wins, losses,
                         ties,
                         longestWinStreak,
