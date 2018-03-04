@@ -35,41 +35,31 @@ public class Clawler {
     }
 
     public void exec() throws SQLException {
-        this.con = this.db.connect();
-
         for (Region region : Region.values()) {
+            this.con = this.db.connect();
+
             int currentSeasonId = this.updateCurrentSeason(region);
             this.updateProfiles(region, currentSeasonId);
 
-            this.con.commit();
+            this.con.close();
         }
-
-        this.con.close();
     }
 
     private void updateProfiles(Region region, int seasonId) {
         ArrayList<Integer> ladderIds = this.getAllLadderIds(region, seasonId);
         ladderIds.forEach(ladderId -> {
-            // wait for api request limit
             try {
                 Thread.sleep(Constant.WAIT_TIME_PER_LADDER_ANALYZATION);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
-            // save to db
-            try {
                 List<ProfileLog> profileLogs = this.getProfileLogs(region, ladderId);
                 profileLogs.forEach(profileLog -> {
                     profileLog.save(this.con);
                 });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
-            try {
                 this.con.commit();
             } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
