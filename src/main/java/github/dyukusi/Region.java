@@ -14,4 +14,14 @@ public enum Region {
     public int getId() {
         return this.id;
     }
+
+    static public Region getById(int id) {
+        for (Region region : Region.values()) {
+            if (region.getId() == id) {
+                return region;
+            }
+        }
+
+        return null;
+    }
 }

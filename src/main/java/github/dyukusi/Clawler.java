@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import github.dyukusi.model.ProfileLog;
 import github.dyukusi.model.Season;
+import github.dyukusi.model.League;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -34,11 +35,16 @@ public class Clawler {
         this.BNET_API_ACCESS_TOKEN = (String) bnetSetting.get("access_token");
     }
 
+    public DB getDB() {
+        return this.db;
+    }
+
     public void exec() throws SQLException {
         for (Region region : Region.values()) {
             this.con = this.db.connect();
 
             int currentSeasonId = this.updateCurrentSeason(region);
+            this.updateLeagueMaxMinRating(region, currentSeasonId);
             this.updateProfiles(region, currentSeasonId);
 
             this.con.close();
@@ -65,7 +71,7 @@ public class Clawler {
         });
     }
 
-    private ArrayList<ProfileLog> getProfileLogs(Region region, Integer ladderId) {
+    ArrayList<ProfileLog> getProfileLogs(Region region, Integer ladderId) {
         ArrayList<ProfileLog> profileLogs = new ArrayList<>();
         JsonObject ladderJson = BnetAPI.getLadder(region, ladderId, this.BNET_API_ACCESS_TOKEN);
 
@@ -167,12 +173,50 @@ public class Clawler {
         return profileLogs;
     }
 
+    private void updateLeagueMaxMinRating(Region region, int seasonId) {
+        int queueId = Constant.LOTV_1V1_QUEUE_ID;
+        List<League> leagues = new ArrayList<>();
+
+        for (int leagueId : Constant.LEAGUE_IDS) {
+            JsonObject leagueJson = BnetAPI.getLeague(region, seasonId, queueId, leagueId, this.BNET_API_ACCESS_TOKEN);
+            JsonArray tierJsonArray = leagueJson.get("tier").getAsJsonArray();
+
+            tierJsonArray.forEach(tierJsonElement -> {
+                JsonObject tierJson = tierJsonElement.getAsJsonObject();
+                int tier = tierJson.get("id").getAsInt() + 1;
+                int minRating = tierJson.has("min_rating") ? tierJson.get("min_rating").getAsInt() : -1;
+                int maxRating = tierJson.has("max_rating") ? tierJson.get("max_rating").getAsInt() : -1;
+
+                leagues.add(new League(
+                        region,
+                        seasonId,
+                        queueId,
+                        leagueId,
+                        tier,
+                        minRating,
+                        maxRating
+                ));
+            });
+        }
+
+        leagues.forEach(league -> {
+            league.save(this.con);
+        });
+
+        try {
+            this.con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // NOTE: only supporting 1v1 atm
     private ArrayList<Integer> getAllLadderIds(Region region, int seasonId) {
         ArrayList<Integer> ladderIds = new ArrayList<>();
 
         for (int leagueId : Constant.LEAGUE_IDS) {
-            JsonArray tierJsonArray = BnetAPI.getLeague(region, seasonId, Constant.LOTV_1V1_QUEUE_ID, leagueId, this.BNET_API_ACCESS_TOKEN).get("tier").getAsJsonArray();
+            JsonObject leagueJson = BnetAPI.getLeague(region, seasonId, Constant.LOTV_1V1_QUEUE_ID, leagueId, this.BNET_API_ACCESS_TOKEN);
+            JsonArray tierJsonArray = leagueJson.get("tier").getAsJsonArray();
 
             tierJsonArray.forEach(tierJson -> {
                 List<Integer> extractedLadderIds = this.extractLadderIdsByTierJson(tierJson.getAsJsonObject());

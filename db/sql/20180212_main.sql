@@ -46,3 +46,15 @@ CREATE TABLE sc2logs.season (
        end_at DATETIME NOT NULL,
        PRIMARY KEY(id)
 ) ENGINE=InnoDB;
+
+CREATE TABLE sc2logs.league (
+       region_id INT NOT NULL,
+       season_id INT NOT NULL,
+       queue_id INT NOT NULL,
+       league_id INT NOT NULL,
+       tier INT NOT NULL,
+       min_rating INT NOT NULL,
+       max_rating INT NOT NULL,
+       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       PRIMARY KEY(region_id, season_id, queue_id, league_id, tier)
+) ENGINE=InnoDB;
