@@ -44,7 +44,7 @@ CREATE TABLE sc2logs.season (
        number INT NOT NULL,
        start_at DATETIME NOT NULL,
        end_at DATETIME NOT NULL,
-       PRIMARY KEY(id)
+       PRIMARY KEY(region_id, id, year, number)
 ) ENGINE=InnoDB;
 
 CREATE TABLE sc2logs.league (

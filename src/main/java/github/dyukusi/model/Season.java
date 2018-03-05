@@ -25,17 +25,20 @@ public class Season {
 
     public void save(Connection con) {
         try {
-            String sql = String.format(
-                    "INSERT INTO season (region_id, id, year, number, start_at, end_at) VALUES (%d, %d, %d, %d, FROM_UNIXTIME(%d), FROM_UNIXTIME(%d))",
-                    this.region_id,
-                    this.id,
-                    this.year,
-                    this.number,
-                    this.start_at,
-                    this.end_at
-            );
-            Statement st = con.createStatement();
-            st.execute(sql);
+            PreparedStatement ps = con.prepareStatement("INSERT IGNORE INTO season VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))");
+            ps.setInt(1, this.region_id);
+            ps.setInt(2, this.id);
+            ps.setInt(3, this.year);
+            ps.setInt(4, this.number);
+            ps.setLong(5, this.start_at);
+            ps.setLong(6, this.end_at);
+
+            System.out.println(ps.toString());
+
+            boolean result = ps.execute();
+            if (result) {
+                System.err.println("season insertion failed. " + ps.toString());
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -251,8 +251,12 @@ public class Clawler {
                 currentSeasonJson.get("end_timestamp").getAsLong()
         );
 
-        if (!Season.has(this.con, season.getId())) {
-            season.save(this.con);
+        season.save(this.con);
+
+        try {
+            this.con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return season.getId();
