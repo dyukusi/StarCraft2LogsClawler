@@ -39,16 +39,14 @@ public class Clawler {
         return this.db;
     }
 
-    public void exec() throws SQLException {
-        for (Region region : Region.values()) {
-            this.con = this.db.connect();
+    public void exec(Region region) throws SQLException {
+        this.con = this.db.connect();
 
-            int currentSeasonId = this.updateCurrentSeason(region);
-            this.updateLeagueMaxMinRating(region, currentSeasonId);
-            this.updateProfiles(region, currentSeasonId);
+        int currentSeasonId = this.updateCurrentSeason(region);
+        this.updateLeagueMaxMinRating(region, currentSeasonId);
+        this.updateProfiles(region, currentSeasonId);
 
-            this.con.close();
-        }
+        this.con.close();
     }
 
     private void updateProfiles(Region region, int seasonId) {
