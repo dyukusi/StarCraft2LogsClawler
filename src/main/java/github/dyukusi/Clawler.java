@@ -61,10 +61,9 @@ public class Clawler {
                 });
 
                 this.con.commit();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.err.println("ladder_id: " + ladderId);
             }
         });
     }
