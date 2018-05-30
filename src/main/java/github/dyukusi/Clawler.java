@@ -52,6 +52,8 @@ public class Clawler {
     private void updateProfiles(Region region, int seasonId) {
         ArrayList<Integer> ladderIds = this.getAllLadderIds(region, seasonId);
         ladderIds.forEach(ladderId -> {
+            System.out.println("target ladder id: " + ladderId);
+            
             try {
                 Thread.sleep(Constant.WAIT_TIME_PER_LADDER_ANALYZATION);
 
